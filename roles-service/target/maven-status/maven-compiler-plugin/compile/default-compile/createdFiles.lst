@@ -1,0 +1,8 @@
+com\induztek\roles\RolesServiceApplication.class
+com\induztek\roles\RoleController.class
+com\induztek\roles\RoleRepository.class
+com\induztek\roles\SecurityConfiguration.class
+com\induztek\roles\RoleSeed.class
+com\induztek\roles\RoleController$RoleResponse.class
+com\induztek\roles\RoleEntity.class
+com\induztek\roles\RoleController$RoleRequest.class

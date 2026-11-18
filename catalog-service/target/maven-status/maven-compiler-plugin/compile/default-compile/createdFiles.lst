@@ -1,0 +1,16 @@
+com\induztek\catalog\CatalogController$EquipoResponse.class
+com\induztek\catalog\CatalogController$InstrumentoRequest.class
+com\induztek\catalog\CatalogController$InstrumentoResponse.class
+com\induztek\catalog\CatalogController$CalibrationRequest.class
+com\induztek\catalog\InstrumentoEntity.class
+com\induztek\catalog\CatalogServiceApplication.class
+com\induztek\catalog\CatalogController$EquipoRequest.class
+com\induztek\catalog\EquipoEntity.class
+com\induztek\catalog\CatalogController$EquipmentExistsResponse.class
+com\induztek\catalog\CatalogSecurityConfiguration.class
+com\induztek\catalog\CatalogController$ActiveRequest.class
+com\induztek\catalog\CatalogController$DuplicateResponse.class
+com\induztek\catalog\CatalogController.class
+com\induztek\catalog\EquipoRepository.class
+com\induztek\catalog\InstrumentoRepository.class
+com\induztek\catalog\CatalogController$EquipmentDuplicate.class
