@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -78,6 +79,13 @@ public class IdentityController {
     public IdentityService.UserResponse setUserState(
             @PathVariable String id, @Valid @RequestBody ActiveRequest request) {
         return identity.setActive(id, request.active());
+    }
+
+    @DeleteMapping("/api/usuarios/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable String id) {
+        identity.deleteUser(id);
     }
 
     public record ActiveRequest(@NotNull Boolean active) {

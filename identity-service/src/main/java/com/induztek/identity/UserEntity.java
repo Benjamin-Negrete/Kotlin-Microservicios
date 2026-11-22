@@ -75,6 +75,9 @@ public class UserEntity {
     public String getBiography() { return biography; }
     public void setActive(boolean active) { this.active = active; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setName(String name) { this.name = name; }
+    public void setEmail(String email) { this.email = email; }
+    public void setCompany(String company) { this.company = company; }
     public void setFotoPerfil(String fotoPerfil) { this.fotoPerfil = fotoPerfil; this.photoUrl = fotoPerfil; }
     public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; this.fotoPerfil = photoUrl; }
     public void setBiography(String biography) { this.biography = biography; }

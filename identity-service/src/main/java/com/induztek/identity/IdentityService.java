@@ -62,20 +62,30 @@ public class IdentityService {
         if (users.existsByEmailIgnoreCase(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with this email already exists");
         }
-        RoleClient.RoleResponse role = roleClient.findByCode(DEFAULT_ROLE);
+        String targetRoleCode = request.roleCode() != null && !request.roleCode().isBlank()
+                ? request.roleCode()
+                : "CLIENT";
+        RoleClient.RoleResponse role = roleClient.findByCode(targetRoleCode);
         if (role == null) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Default user role is unavailable");
+            role = roleClient.findByCode(DEFAULT_ROLE);
         }
         UserEntity user = users.save(new UserEntity(
                 UUID.randomUUID().toString(),
                 email,
                 passwordEncoder.encode(request.password()),
                 request.name().trim(),
-                role.code(),
+                role != null ? role.code() : DEFAULT_ROLE,
                 normalizeNullable(request.company()),
                 Instant.now(),
                 !requireApproval));
         return UserResponse.from(user);
+    }
+
+    @Transactional
+    public void deleteUser(String id) {
+        UserEntity user = users.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        users.delete(user);
     }
 
     @Transactional(readOnly = true)
@@ -164,10 +174,23 @@ public class IdentityService {
     public UserResponse updateProfile(String userId, ProfileUpdateRequest request) {
         UserEntity user = users.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        if (request.name() != null && !request.name().isBlank()) {
+            user.setName(request.name().trim());
+        }
+        if (request.email() != null && !request.email().isBlank()) {
+            user.setEmail(normalizeEmail(request.email()));
+        }
+        if (request.company() != null) {
+            user.setCompany(normalizeNullable(request.company()));
+        }
         String pic = request.fotoPerfil() != null ? request.fotoPerfil() : request.photoUrl();
-        user.setFotoPerfil(pic);
-        user.setPhotoUrl(pic);
-        user.setBiography(request.biography());
+        if (pic != null) {
+            user.setFotoPerfil(pic);
+            user.setPhotoUrl(pic);
+        }
+        if (request.biography() != null) {
+            user.setBiography(request.biography().trim());
+        }
         return UserResponse.from(users.save(user));
     }
 
@@ -207,6 +230,7 @@ public class IdentityService {
             @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(min = 10, max = 72) String password,
             @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 120) String name,
             @jakarta.validation.constraints.Size(max = 120) String company,
+            @jakarta.validation.constraints.Size(max = 50) String roleCode,
             @jakarta.validation.constraints.AssertTrue boolean termsAccepted) {
     }
 
@@ -230,6 +254,9 @@ public class IdentityService {
     }
 
     public record ProfileUpdateRequest(
+            @jakarta.validation.constraints.Size(max = 120) String name,
+            @jakarta.validation.constraints.Email String email,
+            @jakarta.validation.constraints.Size(max = 120) String company,
             @jakarta.validation.constraints.Size(max = 2048) String fotoPerfil,
             @jakarta.validation.constraints.Size(max = 2048) String photoUrl,
             @jakarta.validation.constraints.Size(max = 500) String biography) {

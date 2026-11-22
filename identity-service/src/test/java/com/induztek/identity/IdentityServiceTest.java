@@ -23,7 +23,7 @@ class IdentityServiceTest {
                 roles, notifications, 480, 10, true);
 
         assertThrows(ResponseStatusException.class, () -> service.register(
-                new IdentityService.RegisterRequest("tech@example.com", "A-strong-password", "Tech", null, false)));
+                new IdentityService.RegisterRequest("tech@example.com", "A-strong-password", "Tech", null, null, false)));
 
         verifyNoInteractions(users, roles);
     }
