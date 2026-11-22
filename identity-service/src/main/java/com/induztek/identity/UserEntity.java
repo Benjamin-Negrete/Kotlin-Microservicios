@@ -78,6 +78,7 @@ public class UserEntity {
     public void setName(String name) { this.name = name; }
     public void setEmail(String email) { this.email = email; }
     public void setCompany(String company) { this.company = company; }
+    public void setRoleCode(String roleCode) { this.roleCode = roleCode; }
     public void setFotoPerfil(String fotoPerfil) { this.fotoPerfil = fotoPerfil; this.photoUrl = fotoPerfil; }
     public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; this.fotoPerfil = photoUrl; }
     public void setBiography(String biography) { this.biography = biography; }

@@ -88,7 +88,17 @@ public class IdentityController {
         identity.deleteUser(id);
     }
 
+    @PatchMapping("/api/usuarios/{id}/rol")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public IdentityService.UserResponse setUserRole(
+            @PathVariable String id, @Valid @RequestBody RoleRequest request) {
+        return identity.setRole(id, request.roleCode());
+    }
+
     public record ActiveRequest(@NotNull Boolean active) {
+    }
+
+    public record RoleRequest(@jakarta.validation.constraints.NotBlank String roleCode) {
     }
 
     public record Message(String message) {

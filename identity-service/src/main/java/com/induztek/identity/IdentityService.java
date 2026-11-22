@@ -171,6 +171,19 @@ public class IdentityService {
     }
 
     @Transactional
+    public UserResponse setRole(String userId, String roleCode) {
+        UserEntity user = users.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+        RoleClient.RoleResponse role = roleClient.findByCode(roleCode);
+        if (role != null) {
+            user.setRoleCode(role.code());
+        } else {
+            user.setRoleCode(roleCode);
+        }
+        return UserResponse.from(users.save(user));
+    }
+
+    @Transactional
     public UserResponse updateProfile(String userId, ProfileUpdateRequest request) {
         UserEntity user = users.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
