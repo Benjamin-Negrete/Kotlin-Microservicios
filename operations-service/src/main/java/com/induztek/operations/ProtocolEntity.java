@@ -1,52 +1,113 @@
 package com.induztek.operations;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.List;
+import java.util.UUID;
 
+/**
+ * Entidad JPA que representa un protocolo de mantenimiento en la base de datos induztek_operations.
+ * Almacena el resultado global de las pruebas, datos del técnico, estado de formalización
+ * y mediciones/pruebas serializadas en columnas LONGTEXT en formato JSON.
+ */
 @Entity
 @Table(name = "protocolos")
 public class ProtocolEntity {
+
+    /** Identificador primario UUID del protocolo. */
     @Id
     private String id;
+
+    /** Código de protocolo único visible (ej: PROT-2026-001). */
     @Column(nullable = false, unique = true)
     private String codigoProtocolo;
+
+    /** Identificador de la visita técnica asociada. */
     @Column(nullable = false)
     private String visitaId;
+
+    /** Número de orden de trabajo. */
     private String ordenTrabajo;
+
+    /** Código del equipo inspeccionado (debe coincidir con catalog-service). */
     @Column(nullable = false)
     private String equipoCodigo;
+
+    /** Tipo o familia de equipo. */
     private String tipoEquipo;
+
+    /** Fecha y hora de ejecución (YYYY-MM-DD HH:mm). */
     private String fechaHora;
+
+    /** Estado del protocolo (REGISTRADO_TERRENO, FORMALIZADO, OBSERVADO). */
     private String estado;
+
+    /** Resultado global de la inspección (CONFORME, NO_CONFORME, REQUIERE_REVISION). */
     private String resultadoGlobal;
+
+    /** Nombre del técnico que ejecutó las pruebas. */
     private String tecnico;
+
+    /** Usuario o técnico creador del registro. */
     private String tecnicoCreador;
+
+    /** Descripción de las actividades de mantenimiento realizadas. */
     @Column(columnDefinition = "text")
     private String descripcionMantenimiento;
+
+    /** Nombre y modelo del instrumento principal utilizado. */
     private String instrumento;
+
+    /** Indicador de si el instrumento cuenta con certificado de calibración vigente. */
     private boolean calibracionVigente;
+
+    /** Temperatura ambiental durante las pruebas (°C). */
     private String temperaturaAmbiente;
+
+    /** Humedad relativa ambiental (%). */
     private String humedad;
+
+    /** Indica si el acta correspondiente fue entregada al cliente. */
     private boolean actaEntregadaCliente;
+
+    /** Nombre o usuario del ingeniero que formalizó/aprobó el protocolo. */
     private String formalizadoPor;
+
+    /** Fecha y hora exacta de formalización técnica. */
     private String fechaFormalizacion;
+
+    /** Estado de sincronización móvil (PENDIENTE, SINCRONIZADO). */
     private String syncStatus;
+
+    /** Observaciones y recomendaciones técnicas generales. */
     @Column(columnDefinition = "text")
     private String observaciones;
+
+    /** JSON con la lista de pruebas asociadas serializadas. */
     @Column(columnDefinition = "longtext")
     private String pruebasJson;
+
+    /** JSON con las mediciones estructuradas numéricas y unidades. */
     @Column(columnDefinition = "longtext")
     private String medicionesJson;
+
+    /** JSON con las rutas relativas o URLs de fotos de evidencia tomadas. */
     @Column(columnDefinition = "longtext")
     private String fotosJson;
 
+    /** Constructor por defecto requerido por JPA. */
     protected ProtocolEntity() {
     }
 
-    public ProtocolEntity(OperationsController.ProtocolRequest request, com.fasterxml.jackson.databind.ObjectMapper mapper) {
-        id = request.id() == null || request.id().isBlank() ? java.util.UUID.randomUUID().toString() : request.id();
+    /**
+     * Constructor a partir del DTO {@link OperationsController.ProtocolRequest} y el serializador JSON.
+     */
+    public ProtocolEntity(OperationsController.ProtocolRequest request, ObjectMapper mapper) {
+        id = request.id() == null || request.id().isBlank() ? UUID.randomUUID().toString() : request.id();
         codigoProtocolo = request.codigoProtocolo();
         visitaId = request.visitaId();
         ordenTrabajo = request.ordenTrabajo();
@@ -72,10 +133,13 @@ public class ProtocolEntity {
         fotosJson = serialize(mapper, request.fotos());
     }
 
-    static String serialize(com.fasterxml.jackson.databind.ObjectMapper mapper, Object value) {
+    /**
+     * Serializa una estructura de datos Java en formato JSON para almacenamiento en base de datos.
+     */
+    static String serialize(ObjectMapper mapper, Object value) {
         try {
-            return mapper.writeValueAsString(value == null ? java.util.List.of() : value);
-        } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
+            return mapper.writeValueAsString(value == null ? List.of() : value);
+        } catch (JsonProcessingException exception) {
             throw new IllegalArgumentException("Could not serialize protocol data", exception);
         }
     }
@@ -104,5 +168,16 @@ public class ProtocolEntity {
     public String getPruebasJson() { return pruebasJson; }
     public String getMedicionesJson() { return medicionesJson; }
     public String getFotosJson() { return fotosJson; }
-    public void formalize(String user, String date) { formalizadoPor = user; fechaFormalizacion = date; estado = "FORMALIZADO"; }
+
+    /**
+     * Aplica la formalización técnica del protocolo.
+     *
+     * @param user Nombre del ingeniero revisor.
+     * @param date Fecha y hora de formalización.
+     */
+    public void formalize(String user, String date) {
+        formalizadoPor = user;
+        fechaFormalizacion = date;
+        estado = "FORMALIZADO";
+    }
 }

@@ -9,15 +9,32 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Configuración de seguridad web para el microservicio de Catálogo.
+ * Habilita autenticación JWT y acceso público a salud, documentación OpenAPI y llamadas internas.
+ */
 @Configuration
 @EnableMethodSecurity
 public class CatalogSecurityConfiguration {
+
+    /**
+     * Cadena de filtros de seguridad HTTP y autorización de rutas.
+     *
+     * @param http Constructor de seguridad HTTP.
+     * @return {@link SecurityFilterChain} compilado.
+     * @throws Exception Si ocurre un fallo en la configuración.
+     */
     @Bean
     SecurityFilterChain catalogFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                                "/api/equipos/internal/**")
+                        .requestMatchers(
+                                "/actuator/health",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/api/equipos/internal/**"
+                        )
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resourceServer -> resourceServer
@@ -25,6 +42,11 @@ public class CatalogSecurityConfiguration {
         return http.build();
     }
 
+    /**
+     * Mapea el claim 'role' del JWT a las autoridades de Spring Security con prefijo 'ROLE_'.
+     *
+     * @return Conversor {@link JwtAuthenticationConverter}.
+     */
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();

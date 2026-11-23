@@ -4,8 +4,20 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Componente de inicialización (seeding) de datos de roles.
+ * Asegura que los cuatro roles base del sistema existan al arrancar el microservicio.
+ */
 @Configuration
 public class RoleSeed {
+
+    /**
+     * Tarea que se ejecuta al iniciar la aplicación para insertar los roles por defecto si no existen.
+     * Roles iniciales: FIELD_TECHNICIAN, TEST_ENGINEER, ADMIN, CLIENT.
+     *
+     * @param roles Repositorio de roles.
+     * @return {@link ApplicationRunner} con la lógica de inicialización.
+     */
     @Bean
     ApplicationRunner seedRoles(RoleRepository roles) {
         return args -> {
@@ -16,6 +28,9 @@ public class RoleSeed {
         };
     }
 
+    /**
+     * Guarda un rol únicamente si aún no se encuentra registrado en la base de datos.
+     */
     private void saveIfMissing(RoleRepository roles, String id, String code, String name, String description) {
         if (roles.findByCode(code).isEmpty()) {
             roles.save(new RoleEntity(id, code, name, description));

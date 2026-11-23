@@ -10,16 +10,34 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+/**
+ * Configuración de seguridad web para el microservicio de Operaciones.
+ * Requiere autenticación JWT y expone públicamente endpoints de salud, documentación OpenAPI y descarga de imágenes.
+ */
 @Configuration
 @EnableMethodSecurity
 public class OperationsSecurityConfiguration {
+
+    /**
+     * Define la cadena de filtros de seguridad HTTP y las reglas de autorización.
+     */
     @Bean
     SecurityFilterChain operationsFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                        .requestMatchers(
+                                "/actuator/health",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        )
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/imagenes/**", "/api/protocolos/imagenes/**", "/api/pruebas/imagenes/**")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/imagenes/**",
+                                "/api/protocolos/imagenes/**",
+                                "/api/pruebas/imagenes/**"
+                        )
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resourceServer -> resourceServer
@@ -27,6 +45,9 @@ public class OperationsSecurityConfiguration {
         return http.build();
     }
 
+    /**
+     * Mapea el rol en el JWT al formato de autoridades 'ROLE_<ROLE>'.
+     */
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();

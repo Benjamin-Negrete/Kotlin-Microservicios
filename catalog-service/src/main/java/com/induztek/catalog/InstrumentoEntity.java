@@ -5,22 +5,44 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * Entidad JPA que representa los instrumentos de medición y prueba en induztek_catalog.
+ * Gestiona trazabilidad metrológica y vigencia de certificados de calibración.
+ */
 @Entity
 @Table(name = "instrumentos")
 public class InstrumentoEntity {
+
+    /** Identificador único del instrumento. */
     @Id
     private String id;
+
+    /** Tipo de instrumento (Megóhmetro, TTR, Microóhmetro, Analizador de Redes, etc.). */
     @Column(nullable = false)
     private String tipo;
+
+    /** Marca o fabricante del instrumento. */
     private String marca;
+
+    /** Modelo comercial del instrumento. */
     private String modelo;
+
+    /** Número de serie metrológico. */
     private String numeroSerie;
+
+    /** Fecha de vencimiento de la calibración vigente (formato YYYY-MM-DD). */
     private String vencimientoCalibracion;
+
+    /** Estado de disponibilidad operativa del instrumento. */
     private boolean activo;
 
+    /** Constructor por defecto requerido por JPA. */
     protected InstrumentoEntity() {
     }
 
+    /**
+     * Constructor con todos los campos.
+     */
     public InstrumentoEntity(String id, String tipo, String marca, String modelo, String numeroSerie,
             String vencimientoCalibracion, boolean activo) {
         this.id = id;

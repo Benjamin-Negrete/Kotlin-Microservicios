@@ -6,8 +6,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * Inicializador de cuenta de administrador bootstrap.
+ * Crea automáticamente un usuario con rol ADMIN al arrancar la aplicación si se configuran
+ * las variables BOOTSTRAP_ADMIN_EMAIL y BOOTSTRAP_ADMIN_PASSWORD en las variables de entorno.
+ */
 @Configuration
 public class BootstrapAdmin {
+
+    /**
+     * Tarea que evalúa las variables de entorno del admin inicial y lo persiste si aún no existe.
+     */
     @Bean
     ApplicationRunner bootstrapAdminRunner(
             UserRepository users,

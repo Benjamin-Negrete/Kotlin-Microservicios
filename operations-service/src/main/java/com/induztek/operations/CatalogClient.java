@@ -7,14 +7,29 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Cliente HTTP reactivo (WebClient) para comunicarse con el microservicio de Catálogo.
+ * Valida la existencia de equipos antes de crear protocolos o pruebas en operaciones.
+ */
 @Component
 public class CatalogClient {
+
     private final WebClient webClient;
 
+    /**
+     * Constructor con inyección del WebClient.Builder y la URL del servicio de catálogo.
+     */
     public CatalogClient(WebClient.Builder builder, @Value("${services.catalog.url}") String catalogUrl) {
         this.webClient = builder.baseUrl(catalogUrl).build();
     }
 
+    /**
+     * Valida obligatoriamente que el equipo exista en el catálogo.
+     * Si no existe o el servicio de catálogo no responde, lanza una excepción controlada.
+     *
+     * @param code Código del equipo a validar.
+     * @throws ResponseStatusException 404 si el equipo no existe, o 503 si el servicio está caído.
+     */
     public void requireEquipment(String code) {
         try {
             ExistsResponse response = webClient.get()

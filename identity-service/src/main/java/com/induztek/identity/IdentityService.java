@@ -18,8 +18,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Servicio central de lógica de negocio para la gestión de identidades y autenticación.
+ * Maneja registro con aprobación opcional, autenticación JWT (HS256), restablecimiento de contraseñas
+ * mediante códigos de 6 dígitos enviados por SMTP y administración de roles de usuario.
+ */
 @Service
 public class IdentityService {
+
     private static final String DEFAULT_ROLE = "FIELD_TECHNICIAN";
     private final UserRepository users;
     private final PasswordResetRepository resetCodes;
@@ -32,6 +38,9 @@ public class IdentityService {
     private final boolean requireApproval;
     private final SecureRandom random = new SecureRandom();
 
+    /**
+     * Constructor con inyección de dependencias y propiedades de entorno.
+     */
     public IdentityService(
             UserRepository users,
             PasswordResetRepository resetCodes,
@@ -53,6 +62,12 @@ public class IdentityService {
         this.requireApproval = requireApproval;
     }
 
+    /**
+     * Registra un nuevo usuario en la base de datos tras validar términos y disponibilidad del correo.
+     *
+     * @param request Datos de la solicitud de registro.
+     * @return {@link UserResponse} con los datos del usuario creado.
+     */
     @Transactional
     public UserResponse register(RegisterRequest request) {
         if (!request.termsAccepted()) {
@@ -81,6 +96,9 @@ public class IdentityService {
         return UserResponse.from(user);
     }
 
+    /**
+     * Elimina un usuario por su ID.
+     */
     @Transactional
     public void deleteUser(String id) {
         UserEntity user = users.findById(id)
@@ -88,6 +106,12 @@ public class IdentityService {
         users.delete(user);
     }
 
+    /**
+     * Autentica un usuario con email y contraseña y emite un token JWT firmado.
+     *
+     * @param request Credenciales del usuario.
+     * @return {@link LoginResponse} con el JWT y la información de la cuenta.
+     */
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         UserEntity user = users.findByEmailIgnoreCase(normalizeEmail(request.email()))
@@ -115,6 +139,9 @@ public class IdentityService {
                 user.getCompany(), user.getRoleCode(), user.isActive(), pic, pic);
     }
 
+    /**
+     * Genera un código de 6 dígitos aleatorio criptográficamente seguro y lo envía por correo.
+     */
     @Transactional
     public void requestPasswordReset(String rawEmail) {
         String email = normalizeEmail(rawEmail);
@@ -135,6 +162,9 @@ public class IdentityService {
         }
     }
 
+    /**
+     * Valida si el código de recuperación ingresado es válido y no ha expirado.
+     */
     @Transactional(readOnly = true)
     public void verifyPasswordResetCode(String rawEmail, String rawCode) {
         String email = normalizeEmail(rawEmail);
@@ -145,6 +175,9 @@ public class IdentityService {
         }
     }
 
+    /**
+     * Restablece la contraseña de la cuenta tras verificar exitosamente el código de recuperación.
+     */
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         String email = normalizeEmail(request.email());
@@ -164,12 +197,18 @@ public class IdentityService {
         resetCodes.saveAll(otherCodes);
     }
 
+    /**
+     * Obtiene los datos del usuario a partir de su ID.
+     */
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser(String userId) {
         return users.findById(userId).map(UserResponse::from)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
     }
 
+    /**
+     * Asigna un nuevo rol a un usuario existente.
+     */
     @Transactional
     public UserResponse setRole(String userId, String roleCode) {
         UserEntity user = users.findById(userId)
@@ -183,6 +222,9 @@ public class IdentityService {
         return UserResponse.from(users.save(user));
     }
 
+    /**
+     * Actualiza datos de perfil (nombre, email, empresa, foto, biografía).
+     */
     @Transactional
     public UserResponse updateProfile(String userId, ProfileUpdateRequest request) {
         UserEntity user = users.findById(userId)
@@ -207,11 +249,17 @@ public class IdentityService {
         return UserResponse.from(users.save(user));
     }
 
+    /**
+     * Retorna la lista de todos los usuarios registrados.
+     */
     @Transactional(readOnly = true)
     public List<UserResponse> listUsers() {
         return users.findAll().stream().map(UserResponse::from).toList();
     }
 
+    /**
+     * Activa o desactiva la cuenta de un usuario.
+     */
     @Transactional
     public UserResponse setActive(String id, boolean active) {
         UserEntity user = users.findById(id)
@@ -238,6 +286,7 @@ public class IdentityService {
         };
     }
 
+    /** DTO para la petición de registro. */
     public record RegisterRequest(
             @jakarta.validation.constraints.Email @jakarta.validation.constraints.NotBlank String email,
             @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(min = 10, max = 72) String password,
@@ -247,25 +296,30 @@ public class IdentityService {
             @jakarta.validation.constraints.AssertTrue boolean termsAccepted) {
     }
 
+    /** DTO para la petición de login. */
     public record LoginRequest(
             @jakarta.validation.constraints.Email @jakarta.validation.constraints.NotBlank String email,
             @jakarta.validation.constraints.NotBlank String password) {
     }
 
+    /** DTO para el reseteo de clave con código. */
     public record ResetPasswordRequest(
             @jakarta.validation.constraints.Email @jakarta.validation.constraints.NotBlank String email,
             @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Pattern(regexp = "\\d{6}") String code,
             @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(min = 10, max = 72) String newPassword) {
     }
 
+    /** DTO para validar un código de recuperación. */
     public record VerifyResetCodeRequest(
             @jakarta.validation.constraints.Email @jakarta.validation.constraints.NotBlank String email,
             @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Pattern(regexp = "\\d{6}") String code) {
     }
 
+    /** DTO para solicitar código de recuperación. */
     public record RecoveryRequest(@jakarta.validation.constraints.Email @jakarta.validation.constraints.NotBlank String email) {
     }
 
+    /** DTO para actualizar el perfil. */
     public record ProfileUpdateRequest(
             @jakarta.validation.constraints.Size(max = 120) String name,
             @jakarta.validation.constraints.Email String email,
@@ -275,11 +329,13 @@ public class IdentityService {
             @jakarta.validation.constraints.Size(max = 500) String biography) {
     }
 
+    /** DTO de respuesta para el inicio de sesión. */
     public record LoginResponse(
             String id, String token, String usuario, String email, String perfilCodigo,
             String empresaCliente, String roleCode, boolean activo, String fotoPerfil, String photoUrl) {
     }
 
+    /** DTO de respuesta con la información de un usuario. */
     public record UserResponse(
             String id, String email, String name, String roleCode, String perfilCodigo, String company,
             boolean termsAccepted, Instant termsAcceptedAt, boolean active, String fotoPerfil, String photoUrl, String biography) {
