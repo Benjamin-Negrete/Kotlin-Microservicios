@@ -1,5 +1,10 @@
 # Backend Induztek
 
+## Repositorios
+
+- Aplicación Android (Kotlin): [Eliassss123/Kotlin](https://github.com/Eliassss123/Kotlin/tree/kotlin)
+- Backend de microservicios: [Benjamin-Negrete/Kotlin-Microservicios](https://github.com/Benjamin-Negrete/Kotlin-Microservicios)
+
 Backend Java 21 / Spring Boot 3.5 con servicios independientes, Eureka, un API Gateway, MySQL y Swagger UI centralizada.
 
 ## Servicios
@@ -32,6 +37,8 @@ Para Laragon/XAMPP, crear las bases `induztek_identity`, `induztek_roles`, `indu
 La URL se configura mediante `INDUZTEK_API_BASE_URL` en `gradle.properties` local o en `local.properties`; no guardar una URL de túnel temporal en el código.
 
 ## Seguridad y datos
+
+Las claves para cargar cuentas de demostración se configuran externamente mediante `IDENTITY_DEMO_USERS_ADMIN_PASSWORD`, `IDENTITY_DEMO_USERS_TECHNICIAN_PASSWORD`, `IDENTITY_DEMO_USERS_LAMPA_PASSWORD`, `IDENTITY_DEMO_USERS_ESCONDIDA_PASSWORD` y `IDENTITY_DEMO_USERS_VENTANAS_PASSWORD`. Cada cuenta se omite si su clave no está configurada o tiene menos de 10 caracteres.
 
 El registro exige aceptar términos y asigna estado pendiente si `REGISTRATION_REQUIRE_APPROVAL=true`. Solo un administrador bootstrap configurado puede aprobar cuentas. Las contraseñas se guardan con BCrypt, y los tokens son JWT firmados con `JWT_SECRET`.
 
