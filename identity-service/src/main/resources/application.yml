@@ -4,9 +4,9 @@ spring:
   application:
     name: identity-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/induztek_identity?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-    username: ${MYSQL_USER:induztek}
-    password: ${MYSQL_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/induztek_identity?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${MYSQL_USER:induztek_app}
+    password: ${MYSQL_PASSWORD:InduztekPass2026!Secure}
   jpa:
     hibernate:
       ddl-auto: update
@@ -29,7 +29,7 @@ eureka:
       defaultZone: ${EUREKA_URL:http://service-registry:8761/eureka/}
 identity:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:InduztekSuperSecretJwtKeyForInduztekProtocolos2026SecureKey32BytesMinimum}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:480}
   registration:
     require-approval: ${REGISTRATION_REQUIRE_APPROVAL:true}
@@ -51,6 +51,8 @@ services:
     url: ${ROLES_SERVICE_URL:http://roles-service:8082}
   notifications:
     url: ${NOTIFICATIONS_SERVICE_URL:http://notifications-service:8086}
+    # Debe superar el peor caso de notifications-service (2 intentos SMTP de ~20 s).
+    timeout-seconds: ${NOTIFICATIONS_TIMEOUT_SECONDS:50}
 media:
   upload-dir: ${UPLOAD_DIR:/app/upload}
   public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}

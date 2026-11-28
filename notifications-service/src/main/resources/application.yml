@@ -4,19 +4,24 @@ spring:
   application:
     name: notifications-service
   mail:
-    host: ${SMTP_HOST:}
+    host: ${SMTP_HOST:smtp.gmail.com}
     port: ${SMTP_PORT:587}
     username: ${SMTP_USER:}
     password: ${SMTP_PASSWORD:}
     properties:
       mail.smtp.auth: ${SMTP_AUTH:true}
       mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
+      # Sin estos valores JavaMail espera indefinidamente si el SMTP no responde.
+      # identity-service espera hasta 50 s (services.notifications.timeout-seconds); se reintenta 1 vez.
+      mail.smtp.connectiontimeout: ${SMTP_CONNECTION_TIMEOUT_MS:10000}
+      mail.smtp.timeout: ${SMTP_READ_TIMEOUT_MS:10000}
+      mail.smtp.writetimeout: ${SMTP_WRITE_TIMEOUT_MS:10000}
 eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://service-registry:8761/eureka/}
 notifications:
-  sender: ${SMTP_FROM:no-reply@induztek.local}
+  sender: ${SMTP_FROM:${SMTP_USER:}}
 management:
   endpoints:
     web:

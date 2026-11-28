@@ -17,7 +17,11 @@ class EquipoEntityTest {
 
         assertEquals("id-1", equipo.getId());
         assertEquals("EQ-2", equipo.getCodigo());
+        assertEquals("TAG-2", equipo.getTagCliente());
         assertEquals("Relé", equipo.getTipo());
         assertEquals("Cliente B", equipo.getCliente());
+        assertEquals("Sala", equipo.getUbicacion());
+        assertEquals("SN-2", equipo.getNumeroSerie());
+        assertEquals("Aprobado", equipo.getUltimoEstado());
     }
 }

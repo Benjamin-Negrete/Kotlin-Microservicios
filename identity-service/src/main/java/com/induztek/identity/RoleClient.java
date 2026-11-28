@@ -3,6 +3,7 @@ package com.induztek.identity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Component
 public class RoleClient {
@@ -19,6 +20,8 @@ public class RoleClient {
                     .retrieve()
                     .bodyToMono(RoleResponse.class)
                     .block(java.time.Duration.ofSeconds(3));
+        } catch (WebClientResponseException.NotFound exception) {
+            return null;
         } catch (RuntimeException exception) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,

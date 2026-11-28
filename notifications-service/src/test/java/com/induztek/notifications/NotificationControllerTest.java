@@ -33,7 +33,58 @@ class NotificationControllerTest {
         doThrow(new MailSendException("offline")).when(sender).send(any(SimpleMailMessage.class));
         NotificationController controller = new NotificationController(sender, "test@example.com");
 
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+                () -> controller.sendRecoveryEmail(new NotificationController.RecoveryRequest("user@example.com", "124578")));
+        assertEquals(502, error.getStatusCode().value());
+    }
+
+    @Test
+    void retriesOnceWhenSmtpConnectionFails() {
+        // Regresión del 502: la primera conexión TLS con Gmail podía cortarse ("Remote host terminated the handshake").
+        JavaMailSender sender = org.mockito.Mockito.mock(JavaMailSender.class);
+        doThrow(new MailSendException("Could not convert socket to TLS"))
+                .doNothing()
+                .when(sender).send(any(SimpleMailMessage.class));
+        NotificationController controller = new NotificationController(sender, "test@example.com");
+
+        controller.sendRecoveryEmail(new NotificationController.RecoveryRequest("user@example.com", "124578"));
+
+        verify(sender, org.mockito.Mockito.times(2)).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    void doesNotRetryWhenCredentialsAreRejected() {
+        JavaMailSender sender = org.mockito.Mockito.mock(JavaMailSender.class);
+        doThrow(new org.springframework.mail.MailAuthenticationException("535 bad credentials"))
+                .when(sender).send(any(SimpleMailMessage.class));
+        NotificationController controller = new NotificationController(sender, "test@example.com");
+
         assertThrows(ResponseStatusException.class,
                 () -> controller.sendRecoveryEmail(new NotificationController.RecoveryRequest("user@example.com", "124578")));
+        verify(sender, org.mockito.Mockito.times(1)).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    void reportsMailAuthenticationFailureAsBadGateway() {
+        JavaMailSender sender = org.mockito.Mockito.mock(JavaMailSender.class);
+        doThrow(new org.springframework.mail.MailAuthenticationException("bad credentials"))
+                .when(sender).send(any(SimpleMailMessage.class));
+        NotificationController controller = new NotificationController(sender, "test@example.com");
+
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+                () -> controller.sendRecoveryEmail(new NotificationController.RecoveryRequest("user@example.com", "124578")));
+        assertEquals(502, error.getStatusCode().value());
+    }
+
+    @Test
+    void reportsAnyMailExceptionAsBadGateway() {
+        JavaMailSender sender = org.mockito.Mockito.mock(JavaMailSender.class);
+        doThrow(new org.springframework.mail.MailPreparationException("bad message"))
+                .when(sender).send(any(SimpleMailMessage.class));
+        NotificationController controller = new NotificationController(sender, "test@example.com");
+
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+                () -> controller.sendRecoveryEmail(new NotificationController.RecoveryRequest("user@example.com", "124578")));
+        assertEquals(502, error.getStatusCode().value());
     }
 }
